@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from models import Job
+from .models import Job
 
-class jobSerializer(serializers.ModelSerializer):
+class JobSerializer(serializers.ModelSerializer):
     employer= serializers.ReadOnlyField(
         source ="employer.username"
     )

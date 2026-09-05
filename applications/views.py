@@ -29,11 +29,8 @@ class ApplicationListCreateAPIView(APIView):
         elif request.user.role == "EMPLOYER":
 
             applications = Application.objects.filter(
-                job__employer=request.user
-            ).select_related(
-                "job",
-                "candidate"
-            ).order_by("-applied_at")
+                job__employer=request.user).select_related(
+                "job","candidate").order_by("-applied_at")
 
         else:
 
@@ -46,9 +43,7 @@ class ApplicationListCreateAPIView(APIView):
 
     def post(self, request):
         if request.user.role != "CANDIDATE":
-            raise PermissionDenied(
-                "Only candidates can apply for jobs."
-            )
+            raise PermissionDenied("Only candidates can apply for jobs." )
 
         job_id = request.data.get("job")
 
@@ -58,16 +53,12 @@ class ApplicationListCreateAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        job = get_object_or_404(
-            Job,
-            id=job_id
-        )
+        job = get_object_or_404(Job,id=job_id)
 
         # Prevent duplicate application
         if Application.objects.filter(
             job=job,
-            candidate=request.user
-        ).exists():
+            candidate=request.user).exists():
 
             return Response(
                 {

@@ -20,9 +20,14 @@ class JobListCreateAPIView(APIView):
 
     def get(self, request):
 
+
         jobs = Job.objects.all().order_by("-created_at")
 
         search = request.query_params.get("search")
+        title = request.query_params.get("title")
+        location = request.query_params.get("location")
+        skills = request.query_params.get("skills")
+        employment_type = request.query_params.get("employment_type")
 
         if search:
             jobs = jobs.filter(
@@ -32,22 +37,28 @@ class JobListCreateAPIView(APIView):
                 | Q(description__icontains=search)
             )
 
-        serializer = JobSerializer(
-            jobs,
-            many=True
-        )
+        if title:
+            jobs = jobs.filter(title__icontains=title)
 
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
-        )
+        if location:
+            jobs = jobs.filter(location__icontains=location)
+
+        if skills:
+            jobs = jobs.filter(skills__icontains=skills)
+
+        if employment_type:
+            jobs = jobs.filter(employment_type=employment_type)
+
+        serializer = JobSerializer(jobs,many=True)
+
+        return Response(serializer.data,status=status.HTTP_200_OK)
+
 
     def post(self, request):
 
         if request.user.role != "EMPLOYER":
             raise PermissionDenied(
-                "Only employers can create jobs."
-            )
+                "Only employers can create jobs.")
 
         serializer = JobSerializer(data=request.data)
 
@@ -86,7 +97,7 @@ class JobDetailAPIView(APIView):
         return Response(
             serializer.data,
             status=status.HTTP_200_OK)
-    
+
 
     def put(self, request, pk):
 
